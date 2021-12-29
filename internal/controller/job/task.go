@@ -1,5 +1,5 @@
-// @Title 请填写文件名称（需要改）
-// @Description 请填写文件描述（需要改）
+// @Title 消费redis队列
+// @Description 该文件已废弃，该用rpc直接调用
 // @Author shigx 2021/11/29 11:09 上午
 package job
 

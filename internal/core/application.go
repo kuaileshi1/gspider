@@ -152,6 +152,7 @@ func (app *Application) SetServerCliHandler(jobHandler *cron.Job) AppContract {
 func (app *Application) Start() {
 
 	if isCommandLine {
+		go app.startRpc()
 		app.CliHandler.Run()
 		return
 	}
@@ -238,5 +239,16 @@ func (app *Application) initRedis() {
 func (app *Application) startWeb() {
 	if err := StartServer(app.Config.Server); err != nil {
 		log.Fatal("ListenAndServe Failed: ", err)
+	}
+}
+
+// @Description 启动rpc服务
+// @Auth shigx
+// @Date 2021/12/26 4:03 下午
+// @param
+// @return
+func (app *Application) startRpc() {
+	if err := StartRpcServer(app.Config.Rpc); err != nil {
+		log.Fatal("ListenAndRpcServe Failed: ", err)
 	}
 }

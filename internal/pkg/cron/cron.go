@@ -8,9 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type EntryID cron.EntryID
+
 // Job结构体
 type Job struct {
-	Cron *cron.Cron
+	cron *cron.Cron
 }
 
 // 任务日志结构体
@@ -33,7 +35,7 @@ func NewJob() *Job {
 		return job
 	}
 	job = &Job{
-		Cron: cron.New(cron.WithSeconds(), cron.WithChain(cron.SkipIfStillRunning(logger))),
+		cron: cron.New(cron.WithSeconds(), cron.WithChain(cron.SkipIfStillRunning(logger))),
 	}
 
 	return job
@@ -46,7 +48,38 @@ func NewJob() *Job {
 // @return
 func (j *Job) Run() {
 	running = true
-	j.Cron.Run()
+	j.cron.Run()
+}
+
+// @Description 添加任务
+// @Auth shigx
+// @Date 2021/12/29 5:33 下午
+// @param
+// @return
+func (j *Job) AddFunc(spec string, cmd func()) (EntryID, error) {
+	id, err := j.cron.AddFunc(spec, cmd)
+
+	return EntryID(id), err
+}
+
+// @Description 添加任务
+// @Auth shigx
+// @Date 2021/12/29 5:39 下午
+// @param
+// @return
+func (j *Job) AddJob(spec string, cmd cron.Job) (EntryID, error) {
+	id, err := j.cron.AddJob(spec, cmd)
+
+	return EntryID(id), err
+}
+
+// @Description 移除定时任务
+// @Auth shigx
+// @Date 2021/12/29 5:42 下午
+// @param
+// @return
+func (j *Job) Remove(id EntryID) {
+	j.cron.Remove(cron.EntryID(id))
 }
 
 // @Description 实现接口Info方法

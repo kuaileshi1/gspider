@@ -15,7 +15,11 @@ vue生成文件直接copy到internal/dist目录。
 7、$ ./cmd/job/main -conf=configs/app-ga.yaml  # 启动脚本服务
 
 ```
-项目构建和部署可以根据自己业务实际情况进行操作。由于项目架构按照微服务的形式进行拆分，目前跨应用操作逻辑借助redis进行交互，后期可以基于grpc实现。
+### 访问管理后台
+```text
+http://localhost:9526/admin
+```
+项目构建和部署可以根据自己业务实际情况进行操作。
 
 ### 项目目录结构
 ```

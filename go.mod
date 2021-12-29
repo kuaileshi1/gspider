@@ -27,7 +27,11 @@ require (
 	github.com/spf13/viper v1.10.0
 	github.com/temoto/robotstxt v1.1.2 // indirect
 	golang.org/x/crypto v0.0.0-20211209193657-4570a0811e8b
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
+	google.golang.org/genproto v0.0.0-20211223182754-3ac035c7e7cb // indirect
+	google.golang.org/grpc v1.43.0
+	google.golang.org/protobuf v1.27.1
 	gorm.io/driver/mysql v1.2.1 // indirect
 	gorm.io/gorm v1.22.4
 )
