@@ -1,6 +1,8 @@
 server:
   port: 9526
   readTimeOut: 40
+rpc:
+  port: 8888
 app:
   mode: release #gin的启动模式， debug or release or test
   log_path: ./logs
