@@ -5,12 +5,11 @@ package jobservice
 
 import (
 	"fmt"
-	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 	constant_task "gspider/internal/constant/task"
-	"gspider/internal/core"
 	"gspider/internal/model"
 	"gspider/internal/model/entity"
+	"gspider/internal/pkg/cron"
 	"gspider/internal/pkg/spider"
 	"sync"
 )
@@ -83,7 +82,7 @@ func (cs *CronService) Run() {
 // @param
 // @return
 func (cs *CronService) Start() error {
-	entityID, err := core.App.CliHandler.Cron.AddJob(cs.cronSpec, cs)
+	entityID, err := cron.NewJob().AddJob(cs.cronSpec, cs)
 	if err != nil {
 		return err
 	}
@@ -98,7 +97,7 @@ func (cs *CronService) Start() error {
 // @param
 // @return
 func (cs *CronService) Stop() {
-	core.App.CliHandler.Cron.Remove(cs.entityID)
+	cron.NewJob().Remove(cs.entityID)
 	cronTaskMap.Delete(cs.taskID)
 }
 

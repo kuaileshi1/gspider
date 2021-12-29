@@ -17,10 +17,10 @@ func InitJobRouter() *cron.Job {
 	c := cron.NewJob()
 
 	// web页面操作任务通过异步任务处理
-	c.Cron.AddFunc("*/2 * * * * *", job.MangeTask)
+	// c.Cron.AddFunc("*/2 * * * * *", job.MangeTask)
 
-	c.Cron.AddFunc("*/2 * * * * *", job.CxyOutToMysql)
-	c.Cron.AddFunc("*/2 * * * * *", job.WangyiTechOutToMysql)
+	c.AddFunc("*/2 * * * * *", job.CxyOutToMysql)
+	c.AddFunc("*/2 * * * * *", job.WangyiTechOutToMysql)
 
 	return c
 }

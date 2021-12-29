@@ -18,6 +18,7 @@ var configFile string
 type Config struct {
 	App    map[string]interface{}
 	Server *ServerConfig
+	Rpc    *RpcServerConfig
 	Mysql  map[string]*dbable.MysqlConfig
 	Redis  map[string]*redis.ConfigRedis
 }
@@ -43,6 +44,7 @@ func InitConfig() *Config {
 		panic(fmt.Sprintf("Viper Unmarshal err:%v", err))
 	}
 	reslut.Server.initServerConfig()
+	reslut.Rpc.initServerConfig()
 
 	return reslut
 }

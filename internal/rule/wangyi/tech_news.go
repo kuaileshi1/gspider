@@ -86,6 +86,8 @@ var step2 = &spider.Node{
 				return err
 			}
 
+			fmt.Println(article)
+
 			if _, err := redis.GetClient().RPush(context.Background(), rediskey.WangyiTechOutKey, jsonData).Result(); err != nil {
 				return err
 			}

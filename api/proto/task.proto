@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+option go_package = "./api/proto/pb";
+
+package proto;
+
+service Task {
+  // 启动任务
+  rpc Start(Request) returns (Response) {}
+  // 停止任务
+  rpc Stop(Request) returns (Response) {}
+}
+
+// 定义发送请求信息
+message Request {
+  int64 request = 1;
+}
+
+// 定义响应信息
+message Response {
+  string code = 1;
+}

@@ -4,14 +4,11 @@
 package webservice
 
 import (
-	"context"
-	"encoding/json"
 	log "github.com/sirupsen/logrus"
-	"gspider/internal/constant/rediskey"
 	"gspider/internal/constant/task"
 	"gspider/internal/model"
 	"gspider/internal/model/entity"
-	"gspider/internal/pkg/redis"
+	"gspider/internal/pkg/rpc"
 )
 
 // 任务service
@@ -62,13 +59,24 @@ func (s *TaskService) ChangeStatus(taskId int, taskStatus task.Status) bool {
 		return false
 	}
 
-	type result struct {
-		ID     int         `json:"id"`
-		Status task.Status `json:"status"`
-	}
-	jsonData, _ := json.Marshal(result{ID: taskId, Status: taskStatus})
-	if _, err := redis.GetClient().RPush(context.Background(), rediskey.TaskStatusChangeKey, jsonData).Result(); err != nil {
-		return false
+	// rpc调用开启和关闭任务
+	if taskStatus == task.StatusStopped || taskStatus == task.StatusRunning {
+		client := rpc.NewClient()
+		if client == nil {
+			return false
+		}
+		defer client.Close()
+
+		if taskStatus == task.StatusRunning {
+			if res := client.Start(taskId); res == false {
+				return false
+			}
+		} else {
+			if res := client.Stop(taskId); res == false {
+				return false
+			}
+		}
+
 	}
 
 	return true
