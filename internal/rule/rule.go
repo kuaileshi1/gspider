@@ -5,6 +5,7 @@ package rule
 
 import (
 	"gspider/internal/rule/cxytiandi"
+	"gspider/internal/rule/sporttery"
 	"gspider/internal/rule/wangyi"
 )
 
@@ -16,4 +17,5 @@ import (
 func init() {
 	cxytiandi.Init()
 	wangyi.Init()
+	sporttery.Init()
 }

@@ -47,7 +47,6 @@ func (s *Spider) Run() error {
 
 	// 根据nodes数量初始化带取消的上下文
 	ctxCtl, cancel := context.WithCancel(context.Background())
-	ctxs := make([]*Context, 0, nodesLen)
 	for i := 0; i < nodesLen; i++ {
 		var ctx *Context
 		if i != nodesLen-1 {
@@ -55,7 +54,6 @@ func (s *Spider) Run() error {
 		} else {
 			ctx = newContext(ctxCtl, cancel, s.task, collectors[i], nil)
 		}
-		ctxs = append(ctxs, ctx)
 
 		addCallback(ctx, s.task.Rule.Nodes[i])
 	}
