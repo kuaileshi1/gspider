@@ -14,26 +14,33 @@ mysql:
     maxIdleLifeTime: 5
     maxLifeTime: 10
     master:
-      userName: xxxx
-      password: xxxx
+      userName: root
+      password: xxxxxxxxx
       host: xx.xx.xx.xx
       port: 3306
       dbName: gspider
       charset: utf8mb4
     slave:
-      - userName: xxxx
-        password: xxxx
+      - userName: root
+        password: xxxxxx
         host: xx.xx.xx.xx
         port: 3306
         dbName: gspider
         charset: utf8mb4
+    logger:
+      logPath: ./logs
+      maxAge: 744 # 24 * 31
+      rotationTime: 168 #24 * 7
+      logLevel: info
+      slowThreshold: 200
+      ignoreRecordNotFoundError: false
 redis: # 可配置多个redis，但实例名称不可一致
   default: # 实例名称 test_cache
     driver: replication #主从复制
     master: xx.xx.xx.xx:6379
-    slaves: xx.xx.xx.xx:6379 # 多个用,分割
-    password: xxxx
-    readonlyPassword: xxxx
+    slaves: xx.xx.xx.xx:xx # 多个用,分割
+    password: rc_redis
+    readonlyPassword: rc_redis
     options:
       db: 0 # 使用哪个db
       poolsize: 20 # 连接池保持的最大连接数，默认每个cpu保持10

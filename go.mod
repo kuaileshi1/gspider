@@ -15,7 +15,7 @@ require (
 	github.com/jinzhu/now v1.1.4 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/kuaileshi1/dbable v1.0.0
+	github.com/kuaileshi1/dbable v1.0.1
 	github.com/kuaileshi1/redis v1.0.0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/lestrrat-go/strftime v1.0.5 // indirect
