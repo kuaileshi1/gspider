@@ -6,6 +6,7 @@ package router
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/packr/v2"
+	"gspider/internal/controller/api"
 	"gspider/internal/controller/web"
 	"gspider/internal/core"
 	"gspider/internal/middleware/cors"
@@ -57,6 +58,11 @@ func InitRouter() *gin.Engine {
 	box1 := packr.New("static box", "../dist/static")
 	route.StaticFS("/admin", box)
 	route.StaticFS("/static", box1)
+
+	// 对外接口定义
+	apiGroup := route.Group("/api")
+	sporttery := api.NewSporttery()
+	apiGroup.GET("/sporttery/jczq_score_list", response.Wrap(sporttery.JczqScoreList))
 
 	return route
 }

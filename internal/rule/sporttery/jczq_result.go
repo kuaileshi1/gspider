@@ -14,11 +14,7 @@ import (
 	"time"
 )
 
-func Init() {
-	spider.Register(rule)
-}
-
-var rule = &spider.TaskRule{
+var ruleScore = &spider.TaskRule{
 	Name:        "竞彩网足球赛果",
 	Description: "竞彩足球赛果信息抓取",
 	Rule: &spider.Rule{
@@ -27,13 +23,13 @@ var rule = &spider.TaskRule{
 			return ctx.VisitForNext("https://webapi.sporttery.cn/gateway/jc/football/getMatchResultV1.qry?matchPage=1&matchBeginDate=" + searchDate + "&matchEndDate=" + searchDate + "&leagueId=&pageSize=200&pageNo=1&isFix=0&pcOrWap=1")
 		},
 		Nodes: map[int]*spider.Node{
-			0: step1,
+			0: stepScore1,
 		},
 	},
 }
 
 // 页面结果
-type result struct {
+type scoreResult struct {
 	ErrorCode    string `json:"errorCode"`
 	ErrorMessage string `json:"errorMessage"`
 	Value        struct {
@@ -67,7 +63,7 @@ type result struct {
 	} `json:"value"`
 }
 
-var step1 = &spider.Node{
+var stepScore1 = &spider.Node{
 	OnRequest: func(ctx *spider.Context, req *spider.Request) {
 		log.Infof("Visiting %s", req.URL.String())
 	},
@@ -81,7 +77,7 @@ var step1 = &spider.Node{
 			return fmt.Errorf("Response status:%d", res.StatusCode)
 		}
 
-		var response result
+		var response scoreResult
 		err := json.Unmarshal(res.Body, &response)
 		if err != nil {
 			return err
@@ -129,23 +125,4 @@ var step1 = &spider.Node{
 
 		return nil
 	},
-}
-
-func Retry(ctx *spider.Context, count int) error {
-	req := ctx.GetRequest()
-	key := fmt.Sprintf("err_req_%s", req.URL.String())
-
-	var et int
-	if errCount := ctx.GetAnyReqContextValue(key); errCount != nil {
-		et = errCount.(int)
-		if et >= count {
-			return fmt.Errorf("exceed %d counts", count)
-		}
-	}
-	log.Infof("errCount:%d, we wil retry url:%s, after 1 second", et+1, req.URL.String())
-	time.Sleep(time.Second)
-	ctx.PutReqContextValue(key, et+1)
-	ctx.Retry()
-
-	return nil
 }

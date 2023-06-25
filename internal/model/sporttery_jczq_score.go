@@ -34,3 +34,9 @@ func (m *SportteryJczqScoreModel) BatchInsertOnUpdate(sportteryJczqScore []entit
 		DoUpdates: clause.AssignmentColumns(updateField),
 	}).Create(sportteryJczqScore).Error
 }
+
+func (m *SportteryJczqScoreModel) GetJczqScoreList() ([]entity.SportteryJczqScore, error) {
+	var list []entity.SportteryJczqScore
+	err := m.db.Order("id desc, match_num desc").Limit(50).Find(&list).Error
+	return list, err
+}
