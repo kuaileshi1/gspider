@@ -5,6 +5,7 @@ package spider
 
 import (
 	"errors"
+	"github.com/gocolly/colly/v2"
 )
 
 // 规则哈希map
@@ -64,18 +65,18 @@ type TaskRule struct {
 
 // 回调具体实现
 type Rule struct {
-	Head  func(ctx *Context) error
-	Nodes map[int]*Node
+	Url   string        // 请求url
+	Nodes map[int]*Node // 节点列表
 }
 
 // 页面回调函数
 type Node struct {
-	OnRequest  func(ctx *Context, req *Request)
-	OnError    func(ctx *Context, res *Response, err error) error
-	OnResponse func(ctx *Context, res *Response) error
-	OnHTML     map[string]func(ctx *Context, el *HTMLElement) error
-	OnXML      map[string]func(ctx *Context, el *XMLElement) error
-	OnScraped  func(ctx *Context, res *Response) error
+	OnRequest  func(request *colly.Request)
+	OnError    func(response *colly.Response, e error) error
+	OnResponse func(response *colly.Response, nextC *colly.Collector) error
+	OnHTML     map[string]func(e *colly.HTMLElement, nextC *colly.Collector) error
+	OnXML      map[string]func(e *colly.XMLElement, nextC *colly.Collector) error
+	OnScraped  func(response *colly.Response) error
 }
 
 // @Description 规则检查
@@ -90,8 +91,8 @@ func checkRule(rule *TaskRule) error {
 	if rule.Name == "" {
 		return errors.New("task rule name is empty")
 	}
-	if rule.Rule.Head == nil {
-		return errors.New("task rule head id nil")
+	if rule.Rule.Url == "" {
+		return errors.New("task rule url is empty")
 	}
 	if len(rule.Rule.Nodes) == 0 {
 		return errors.New("task rule nodes len is invalid")

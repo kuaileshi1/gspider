@@ -6,6 +6,7 @@ package sporttery
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gocolly/colly/v2"
 	log "github.com/sirupsen/logrus"
 	"gspider/internal/model"
 	"gspider/internal/model/entity"
@@ -14,14 +15,13 @@ import (
 	"time"
 )
 
+var resultSearchDate = time.Now().Format("2006-01-02")
+
 var ruleScore = &spider.TaskRule{
 	Name:        "竞彩网足球赛果",
 	Description: "竞彩足球赛果信息抓取",
 	Rule: &spider.Rule{
-		Head: func(ctx *spider.Context) error {
-			searchDate := time.Now().Format("2006-01-02")
-			return ctx.VisitForNext("https://webapi.sporttery.cn/gateway/jc/football/getMatchResultV1.qry?matchPage=1&matchBeginDate=" + searchDate + "&matchEndDate=" + searchDate + "&leagueId=&pageSize=200&pageNo=1&isFix=0&pcOrWap=1")
-		},
+		Url: "https://webapi.sporttery.cn/gateway/jc/football/getMatchResultV1.qry?matchPage=1&matchBeginDate=" + resultSearchDate + "&matchEndDate=" + resultSearchDate + "&leagueId=&pageSize=200&pageNo=1&isFix=0&pcOrWap=1",
 		Nodes: map[int]*spider.Node{
 			0: stepScore1,
 		},
@@ -64,15 +64,15 @@ type scoreResult struct {
 }
 
 var stepScore1 = &spider.Node{
-	OnRequest: func(ctx *spider.Context, req *spider.Request) {
+	OnRequest: func(req *colly.Request) {
 		log.Infof("Visiting %s", req.URL.String())
 	},
-	OnError: func(ctx *spider.Context, res *spider.Response, err error) error {
+	OnError: func(res *colly.Response, err error) error {
 		log.Errorf("Visiting failed! url:%s, err:%s", res.Request.URL.String(), err.Error())
 		// 出错时重试三次
-		return Retry(ctx, 3)
+		return Retry(res, 3)
 	},
-	OnResponse: func(ctx *spider.Context, res *spider.Response) error {
+	OnResponse: func(res *colly.Response, nextC *colly.Collector) error {
 		if res.StatusCode != 200 {
 			return fmt.Errorf("Response status:%d", res.StatusCode)
 		}

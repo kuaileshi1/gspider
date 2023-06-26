@@ -6,6 +6,7 @@ package sporttery
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gocolly/colly/v2"
 	log "github.com/sirupsen/logrus"
 	"gspider/internal/pkg/spider"
 )
@@ -14,12 +15,10 @@ var ruleSpfMatch = &spider.TaskRule{
 	Name:        "竞彩网足球胜平负比赛",
 	Description: "竞彩足球胜平负比赛信息抓取",
 	Rule: &spider.Rule{
-		Head: func(ctx *spider.Context) error {
-			return ctx.VisitForNext("https://webapi.sporttery.cn/gateway/jc/football/getMatchCalculatorV1.qry?poolCode=hhad,had&channel=c")
-		},
+		Url: "https://webapi.sporttery.cn/gateway/jc/football/getMatchCalculatorV1.qry?poolCode=hhad,had&channel=c",
 		Nodes: map[int]*spider.Node{
 			0: stepSpf1,
-			1: stepSpf2,
+			//1: stepSpf2,
 		},
 	},
 }
@@ -75,15 +74,15 @@ type matchResult struct {
 }
 
 var stepSpf1 = &spider.Node{
-	OnRequest: func(ctx *spider.Context, req *spider.Request) {
+	OnRequest: func(req *colly.Request) {
 		log.Infof("Visiting %s", req.URL.String())
 	},
-	OnError: func(ctx *spider.Context, res *spider.Response, err error) error {
+	OnError: func(res *colly.Response, err error) error {
 		log.Errorf("Visiting failed! url:%s, err:%s", res.Request.URL.String(), err.Error())
 		// 出错时重试三次
-		return Retry(ctx, 3)
+		return Retry(res, 3)
 	},
-	OnResponse: func(ctx *spider.Context, res *spider.Response) error {
+	OnResponse: func(res *colly.Response, nextC *colly.Collector) error {
 		if res.StatusCode != 200 {
 			return fmt.Errorf("Response status:%d", res.StatusCode)
 		}
@@ -105,15 +104,15 @@ var stepSpf1 = &spider.Node{
 }
 
 var stepSpf2 = &spider.Node{
-	OnRequest: func(ctx *spider.Context, req *spider.Request) {
+	OnRequest: func(req *colly.Request) {
 		log.Infof("Visiting %s", req.URL.String())
 	},
-	OnError: func(ctx *spider.Context, res *spider.Response, err error) error {
+	OnError: func(res *colly.Response, err error) error {
 		log.Errorf("Visiting failed! url:%s, err:%s", res.Request.URL.String(), err.Error())
 		// 出错时重试三次
-		return Retry(ctx, 3)
+		return Retry(res, 3)
 	},
-	OnResponse: func(ctx *spider.Context, res *spider.Response) error {
+	OnResponse: func(res *colly.Response, nextC *colly.Collector) error {
 		if res.StatusCode != 200 {
 			return fmt.Errorf("Response status:%d", res.StatusCode)
 		}

@@ -1,26 +1,32 @@
 // @Title 请填写文件名称（需要改）
 // @Description 请填写文件描述（需要改）
-// @Author shigx 2021/11/30 9:14 上午
+// @Author shigx 2021/11/30 10:08 上午
 package spider
 
 import (
-	"context"
-	"fmt"
-	"sync"
+	"crypto/tls"
+	"github.com/gocolly/colly/v2"
+	"github.com/gocolly/colly/v2/proxy"
+	"net/http"
+	"regexp"
+	"time"
 )
 
-// 爬虫任务结构体
+// Task
+// @Description: 爬虫任务结构体
 type Task struct {
 	ID int
 	TaskRule
 	TaskConfig
 }
 
-// @Description 实例化任务
-// @Auth shigx
-// @Date 2021/12/2 11:03 下午
-// @param
-// @return
+// NewTask
+// @Description: 实例化任务
+// @Auth shigx 2023-06-26 15:39:09
+// @param id 任务id
+// @param rule 任务规则
+// @param config 任务配置
+// @return *Task 任务实例
 func NewTask(id int, rule TaskRule, config TaskConfig) *Task {
 	return &Task{
 		ID:         id,
@@ -29,44 +35,119 @@ func NewTask(id int, rule TaskRule, config TaskConfig) *Task {
 	}
 }
 
-var (
-	ctlMu  = &sync.RWMutex{}
-	ctlMap = make(map[int]context.CancelFunc) // 上下文取消函数
-)
-
-// @Description 执行上下文取消
-// @Auth shigx
-// @Date 2021/12/2 11:08 下午
-// @param
-// @return
-func CancelTask(taskID int) bool {
-	ctlMu.Lock()
-	defer ctlMu.Unlock()
-
-	cancel, ok := ctlMap[taskID]
-	if !ok {
-		return false
-	}
-	cancel()
-	delete(ctlMap, taskID)
-
-	return true
+// 任务配置
+type TaskConfig struct {
+	Option    Option
+	Limit     Limit
+	ProxyURLs []string
 }
 
-// @Description 添加取消函数
+// colly Option配置
+type Option struct {
+	UserAgent              string
+	MaxDepth               int
+	AllowedDomains         []string
+	URLFilters             []*regexp.Regexp
+	AllowURLRevisit        bool
+	MaxBodySize            int
+	IgnoreRobotsTxt        bool
+	InsecureSkipVerify     bool
+	ParseHTTPErrorResponse bool
+	DisableCookies         bool
+	RequestTimeout         time.Duration
+}
+
+// colly limit配置
+type Limit struct {
+	Enable       bool
+	DomainRegexp string
+	DomainGlob   string
+	Delay        time.Duration
+	RandomDelay  time.Duration
+	Parallelism  int
+}
+
+// @Description 实例化colly
 // @Auth shigx
-// @Date 2021/12/2 11:09 下午
+// @Date 2021/12/2 11:27 下午
 // @param
 // @return
-func addTaskCtrl(taskID int, cancelFunc context.CancelFunc) error {
-	ctlMu.Lock()
-	defer ctlMu.Unlock()
+func newCollector(config TaskConfig) (*colly.Collector, error) {
+	opts := make([]colly.CollectorOption, 0)
 
-	if _, ok := ctlMap[taskID]; ok {
-		return fmt.Errorf("duplicate taskID:%d", taskID)
+	opts = append(opts, colly.Async(true))
+	if config.Option.MaxDepth > 1 {
+		opts = append(opts, colly.MaxDepth(config.Option.MaxDepth))
 	}
 
-	ctlMap[taskID] = cancelFunc
+	if len(config.Option.AllowedDomains) > 0 {
+		opts = append(opts, colly.AllowedDomains(config.Option.AllowedDomains...))
+	}
 
-	return nil
+	if config.Option.AllowURLRevisit {
+		opts = append(opts, colly.AllowURLRevisit())
+	}
+	if config.Option.IgnoreRobotsTxt {
+		opts = append(opts, colly.IgnoreRobotsTxt())
+	}
+	if config.Option.MaxBodySize > 0 {
+		opts = append(opts, colly.MaxBodySize(config.Option.MaxBodySize))
+	}
+	if config.Option.UserAgent != "" {
+		opts = append(opts, colly.UserAgent(config.Option.UserAgent))
+	}
+	if config.Option.ParseHTTPErrorResponse {
+		opts = append(opts, colly.ParseHTTPErrorResponse())
+	}
+	if len(config.Option.URLFilters) > 0 {
+		opts = append(opts, colly.URLFilters(config.Option.URLFilters...))
+	}
+
+	c := colly.NewCollector(opts...)
+	if config.Option.DisableCookies {
+		c.DisableCookies()
+	}
+
+	if len(config.ProxyURLs) > 0 {
+		rp, err := proxy.RoundRobinProxySwitcher(config.ProxyURLs...)
+		if err != nil {
+			return nil, err
+		}
+		c.SetProxyFunc(rp)
+	}
+	if config.Limit.Enable {
+		var limit colly.LimitRule
+		if config.Limit.Delay > 0 {
+			limit.Delay = config.Limit.Delay
+		}
+		if config.Limit.DomainGlob != "" {
+			limit.DomainGlob = config.Limit.DomainGlob
+		} else {
+			limit.DomainGlob = "*"
+		}
+
+		if config.Limit.DomainRegexp != "" {
+			limit.DomainRegexp = config.Limit.DomainRegexp
+		}
+		if config.Limit.Parallelism > 0 {
+			limit.Parallelism = config.Limit.Parallelism
+		}
+		if config.Limit.RandomDelay > 0 {
+			limit.RandomDelay = config.Limit.RandomDelay
+		}
+
+		c.Limit(&limit)
+
+	}
+	if config.Option.RequestTimeout > 0 {
+		c.SetRequestTimeout(config.Option.RequestTimeout)
+	}
+	if config.Option.InsecureSkipVerify {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+		c.WithTransport(tr)
+	}
+
+	return c, nil
 }
