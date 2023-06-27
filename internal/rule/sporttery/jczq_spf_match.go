@@ -15,7 +15,9 @@ var ruleSpfMatch = &spider.TaskRule{
 	Name:        "竞彩网足球胜平负比赛",
 	Description: "竞彩足球胜平负比赛信息抓取",
 	Rule: &spider.Rule{
-		Url: "https://webapi.sporttery.cn/gateway/jc/football/getMatchCalculatorV1.qry?poolCode=hhad,had&channel=c",
+		EnterFun: func(c *colly.Collector) error {
+			return c.Visit("https://webapi.sporttery.cn/gateway/jc/football/getMatchCalculatorV1.qry?poolCode=hhad,had&channel=c")
+		},
 		Nodes: map[int]*spider.Node{
 			0: stepSpf1,
 			//1: stepSpf2,

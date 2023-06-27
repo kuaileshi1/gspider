@@ -65,8 +65,8 @@ type TaskRule struct {
 
 // 回调具体实现
 type Rule struct {
-	Url   string        // 请求url
-	Nodes map[int]*Node // 节点列表
+	EnterFun func(c *colly.Collector) error // 入口函数
+	Nodes    map[int]*Node                  // 节点列表
 }
 
 // 页面回调函数
@@ -91,8 +91,8 @@ func checkRule(rule *TaskRule) error {
 	if rule.Name == "" {
 		return errors.New("task rule name is empty")
 	}
-	if rule.Rule.Url == "" {
-		return errors.New("task rule url is empty")
+	if rule.Rule.EnterFun == nil {
+		return errors.New("task rule enterFun is nil")
 	}
 	if len(rule.Rule.Nodes) == 0 {
 		return errors.New("task rule nodes len is invalid")

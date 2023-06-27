@@ -70,7 +70,7 @@ func (s *Spider) Run() error {
 			}
 		}()
 
-		return c.Visit(s.task.Rule.Url)
+		return s.task.Rule.EnterFun(c)
 	}
 	if err = enterWrapper(c); err != nil {
 		return err

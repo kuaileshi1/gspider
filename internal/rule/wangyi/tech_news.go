@@ -26,7 +26,9 @@ var rule = &spider.TaskRule{
 	Name:        "网易科技新闻",
 	Description: "科技新闻抓取",
 	Rule: &spider.Rule{
-		Url: "http://tech.163.com/gd/",
+		EnterFun: func(c *colly.Collector) error {
+			return c.Visit("http://tech.163.com/gd/")
+		},
 		Nodes: map[int]*spider.Node{
 			0: step1,
 			1: step2,
